@@ -126,77 +126,73 @@ class dummyAPI extends Controller
         }
     }
 
-//    function loginUser(Request $request){
-//        $user=User::where('email',$request->email)->first();
-//        if(!$user || !Hash::check($request->password,$user->password)){
-//            return ["result"=>"Email or password is not correct", 'Success'=>false];
-//        }
-//        $success['token']=$user->createToken('MyApp')->plainTextToken;
-//        $user['name']=$user->name;
-//
-//        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully'];
-//    }
+    function loginUser(Request $request){
+        $user=User::where('email',$request->email)->first();
+        if(!$user || !Hash::check($request->password,$user->password)){
+            return ["result"=>"Email or password is not correct", 'Success'=>false];
+        }
+        $success['token']=$user->createToken('MyApp')->plainTextToken;
+        $user['name']=$user->name;
 
-//    function signupUser(SignupUserRequest $request)
+        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully'];
+    }
+
+    function signupUser(SignupUserRequest $request)
+    {
+        $input = $request->validated();
+        $input['password'] = Hash::make($input['password']);
+
+        $user = User::create($input);
+        $success['token'] = $user->createToken('MyApp')->plainTextToken;
+        $user['name'] = $user->name;
+
+        return ['success' => true, 'result' => $success, 'message' => 'user registered successfully'];
+    }
+
+
+
+//    public function signupUser(SignupUserRequest $request)
 //    {
-//        $input = $request->validated();
-//        $input['password'] = Hash::make($input['password']);
+//        try {
+//            $input = $request->validated();
+//            $input['password'] = Hash::make($input['password']);
+//            $user = User::create($input);
 //
-//        $user = User::create($input);
-//        $success['token'] = $user->createToken('MyApp')->plainTextToken;
-//        $user['name'] = $user->name;
+//            return ApiResponse::success([
+//                'data' => $user,
+//                'message' => 'User signed up and logged in successfully.',
+//            ]);
 //
-//        return ['success' => true, 'result' => $success, 'message' => 'user registered successfully'];
+//        } catch (Exception $exception) {
+//            return ApiResponse::setResponse([
+//                'message' => $exception->getMessage()
+//            ]);
+//        }
 //    }
-
 //
-
-    public function signupUser(SignupUserRequest $request)
-    {
-        try {
-            $input = $request->validated();
-            $input['password'] = Hash::make($input['password']);
-            $user = User::create($input);
-
-
-
-            return ApiResponse::success([
-                'data' => $user,
-                'message' => 'User signed up and logged in successfully.',
-            ]);
-
-        } catch (Exception $exception) {
-            return ApiResponse::setResponse([
-                'message' => $exception->getMessage()
-            ]);
-        }
-    }
-
-
-    function loginUser(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-//        $credentials=$request->only('email','password');
-
-        if (Auth::attempt($credentials)) {
-            $success=session()->regenerate();
-
-            return [
-                'success' => $success,
-                'message' => 'User logged in successfully',
-                'user' => Auth::user(),
-            ];
-        }
-
-        return [
-            'success' => false,
-            'message' => 'Email or password is not correct',
-        ];
-    }
-
+//    function  loginUser(Request $request)
+//    {
+//        $credentials = $request->validate([
+//            'email' => 'required|email',
+//            'password' => 'required',
+//        ]);
+////        $credentials=$request->only('email','password');
+//
+//        if (Auth::attempt($credentials)) {
+//            $success=session()->regenerate();
+//
+//            return [
+//                'success' => $success,
+//                'message' => 'User logged in successfully',
+//                'user' => Auth::user(),
+//            ];
+//        }
+//
+//        return [
+//            'success' => false,
+//            'message' => 'Email or password is not correct',
+//        ];
+//    }
 
     function searchUser($name){
         $user = User::where('name', 'like', '%'.$name.'%')->get();

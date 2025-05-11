@@ -23,7 +23,7 @@ class Room extends Model{
         return $this->hasMany(Image::class);
     }
 
-    public function roomTypes()
+    public function roomType()
     {
         return $this->hasMany(RoomType::class);
     }
@@ -32,7 +32,6 @@ class Room extends Model{
     {
         return $this->belongsToMany(Feature::class, 'feature_rooms');
     }
-
 
 }
 

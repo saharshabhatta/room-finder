@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomTypeController;
 use Illuminate\Http\Request;
@@ -40,4 +41,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('features', FeatureController::class);
     Route::apiResource('room_types', RoomTypeController::class);
     Route::apiResource('images', ImageController::class);
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
 });
+
+
+//Route::middleware('auth:sanctum')->group(function () {
+//    Route::get('/profile', [ProfileController::class, 'edit'])
+//        ->name('profile.edit');
+//
+//    Route::put('/profile', [ProfileController::class, 'update'])
+//        ->name('profile.update');
+//
+//    Route::delete('/profile', [ProfileController::class, 'destroy'])
+//        ->name('profile.destroy');
+//});
+

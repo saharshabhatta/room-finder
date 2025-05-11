@@ -27,9 +27,12 @@ class RoomRequest extends FormRequest
             'district' => 'required|string|max:255',
             'province' => 'required|string|max:255',
             'rent' => 'required|numeric|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'features' => 'array',
-            'features.*' => 'required|exists:features,id',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'features' => 'nullable|array',
+            'features.*' => 'nullable|string|max:100',
+            'room_type' => 'nullable|array',
+            'room_type.name' => 'required_with:room_type|string|max:255',
+            'room_type.description' => 'required_with:room_type|string|max:255',
         ];
     }
 }
