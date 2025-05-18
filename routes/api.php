@@ -37,7 +37,8 @@ Route::fallback(function () {
     return response()->json(['error' => 'Not Found'], 404);
 });
 
-Route::apiResource('rooms', RoomController::class);
+Route::get('rooms', [RoomController::class, 'index']);
+Route::middleware('auth:sanctum')->apiResource('rooms', RoomController::class)->except(['index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('features', FeatureController::class);

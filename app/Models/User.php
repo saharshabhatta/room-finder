@@ -53,7 +53,7 @@ class User extends Authenticatable
        return $this->hasOne(Image::class);
     }
 
-    public function roles()
+    public function role()
     {
         return $this->belongsToMany(Role::class, 'role_users');
     }

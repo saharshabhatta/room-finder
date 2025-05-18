@@ -28,7 +28,6 @@ class RoomController extends Controller
     public function store(RoomRequest $request)
     {
         try {
-            if (auth::check()) {
                 DB::beginTransaction();
 
                 $room = Room::create(array_merge(
@@ -37,13 +36,20 @@ class RoomController extends Controller
                 ));
 
                 if ($request->has('features')) {
-                    foreach ($request->input('features') as $featureName) {
-                        $feature = Feature::firstOrCreate([
-                            'name' => $featureName,
-                        ]);
+                    $featureIds = [];
 
-                        $room->features()->attach($feature->id);
+                    foreach ($request->input('features') as $item) {
+                        if (is_numeric($item)) {
+                            $feature = Feature::find($item);
+                            if ($feature) {
+                                $featureIds[] = $feature->id;
+                            }
+                        } elseif (is_string($item)) {
+                            $feature = Feature::firstOrCreate(['name' => $item]);
+                            $featureIds[] = $feature->id;
+                        }
                     }
+                    $room->features()->attach($featureIds);
                 }
 
                 if ($request->hasFile('image')) {
@@ -72,11 +78,6 @@ class RoomController extends Controller
                     'data' => $room->load(['images', 'features', 'roomType']),
                     'message' => 'Room created successfully.',
                 ]);
-            } else {
-                return ApiResponse::error([
-                    'message' => 'Unauthorized'
-                ]);
-            }
         } catch (Exception $e) {
             DB::rollBack();
 
