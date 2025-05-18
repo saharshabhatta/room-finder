@@ -38,17 +38,22 @@ class RoomController extends Controller
                 if ($request->has('features')) {
                     $featureIds = [];
 
-                    foreach ($request->input('features') as $item) {
-                        if (is_numeric($item)) {
-                            $feature = Feature::find($item);
-                            if ($feature) {
-                                $featureIds[] = $feature->id;
+                    if ($request->has('features')) {
+                        $featureIds = [];
+
+                        foreach ($request->input('features') as $item) {
+                            $feature = Feature::find((int) $item);
+
+                            if (!$feature) {
+                                $feature = Feature::firstOrCreate(['name' => $item]);
                             }
-                        } elseif (is_string($item)) {
-                            $feature = Feature::firstOrCreate(['name' => $item]);
+
                             $featureIds[] = $feature->id;
                         }
+
+                        $room->features()->attach($featureIds);
                     }
+
                     $room->features()->attach($featureIds);
                 }
 
