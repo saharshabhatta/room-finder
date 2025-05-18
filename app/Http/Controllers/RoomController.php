@@ -104,7 +104,9 @@ class RoomController extends Controller
             $room = Room::find($id);
 
             if($room->user_id != auth()->id()){
-                abort(403);
+                return ApiResponse::error([
+                    'message' => 'Unauthorized.'
+                ]);
             }
 
             if (!$room) {
@@ -191,7 +193,9 @@ class RoomController extends Controller
         $room = Room::find($id);
 
         if ($room->user_id != auth()->id()) {
-            abort(403);
+           return ApiResponse::error([
+               'message' => 'Unauthorized.'
+           ]);
         }
 
         if (!$room) {
