@@ -15,116 +15,116 @@ use Mockery\Exception;
 
 class dummyAPI extends Controller
 {
-    function getData(){
-        return[
-            "name"=>"Saharsha",
-            "email"=>"saharsha@gmail.com"
-        ];
-    }
-
-    function list($id = null) {
-        $user = User::find($id);
-
-        if (!$user) {
-            return ApiResponse::setResponse([])
-                ->setMessage('User not found')
-                ->setCode(404)
-                ->error();
-        }
-
-        return ApiResponse::setResponse($user)
-            ->setMessage('User fetched successfully')
-            ->setCode(200)
-            ->success();
-    }
-
-    function getUser(){
-        $users = User::all();
-        if(!$users){
-            return ApiResponse::setResponse([])
-                ->setMessage('User not found')
-                ->setCode(404)
-                ->error();
-        }
-        return ApiResponse::success([
-            'data' => $users,
-            'message' => 'User fetched successfully'
-
-        ]);
+//    function getData(){
+//        return[
+//            "name"=>"Saharsha",
+//            "email"=>"saharsha@gmail.com"
+//        ];
+//    }
+//
+//    function list($id = null) {
+//        $user = User::find($id);
+//
+//        if (!$user) {
+//            return ApiResponse::setResponse([])
+//                ->setMessage('User not found')
+//                ->setCode(404)
+//                ->error();
+//        }
+//
+//        return ApiResponse::setResponse($user)
+//            ->setMessage('User fetched successfully')
+//            ->setCode(200)
+//            ->success();
+//    }
+//
+//    function getUser(){
+//        $users = User::all();
+//        if(!$users){
+//            return ApiResponse::setResponse([])
+//                ->setMessage('User not found')
+//                ->setCode(404)
+//                ->error();
+//        }
+//        return ApiResponse::success([
+//            'data' => $users,
+//            'message' => 'User fetched successfully'
+//
+//        ]);
 //        return ApiResponse::setResponse($users)
 //            ->setMessage('User fetched successfully')
 //            ->setCode(200)
 //
 //            ->success();
 //        return ApiResponse::success($users, 'User list fetched successfully');
-    }
+//    }
 
-    function createUser(SignupUserRequest $request){
-        $rules = [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required'],
-        ];
-        $validate=Validator::make($request->all(), $rules);
-        if($validate->fails()){
-            return $validate->errors();
-        }
-        else{
-            $user = new User();
-            $user->name=$request->name;
-            $user->email=$request->email;
-            $user->email_verified_at=$request->email_verified_at;
-            $user->password=$request->password;
-            $user->created_at=$request->created_at;
-            $user->updated_at=$request->updated_at;
-
-            if($user->save()){
-                return ["result"=>"User has been created"];
-            }
-            else{
-                return ["result"=>"User could not be created"];
-            }
-        }
-    }
-
-    function updateUser(SignupUserRequest $request){
-//        return "update user";
-
-        $rules = [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required'],
-        ];
-        $validate=Validator::make($request->all(), $rules);
-        if($validate->fails()){
-            return $validate->errors();
-        }
-        else {
-            $user = User::find($request->id);
-            $user->name = $request->name;
-            $user->email = $request->email;
-            $user->email_verified_at = $request->email_verified_at;
-            $user->password = $request->password;
-            $user->created_at = $request->created_at;
-            $user->updated_at = $request->updated_at;
-
-            if ($user->save()) {
-                return ["result" => "User has been updated"];
-            } else {
-                return ["result" => "User could not be updated"];
-            }
-        }
-    }
-
-    function deleteUser($id){
-        $user=User::destroy($id);
-        if($user){
-            return ["result"=>"User has been deleted"];
-        }
-        else{
-            return ["result"=>"User could not be deleted"];
-        }
-    }
+//    function createUser(SignupUserRequest $request){
+//        $rules = [
+//            'name' => ['required', 'string', 'max:255'],
+//            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+//            'password' => ['required'],
+//        ];
+//        $validate=Validator::make($request->all(), $rules);
+//        if($validate->fails()){
+//            return $validate->errors();
+//        }
+//        else{
+//            $user = new User();
+//            $user->name=$request->name;
+//            $user->email=$request->email;
+//            $user->email_verified_at=$request->email_verified_at;
+//            $user->password=$request->password;
+//            $user->created_at=$request->created_at;
+//            $user->updated_at=$request->updated_at;
+//
+//            if($user->save()){
+//                return ["result"=>"User has been created"];
+//            }
+//            else{
+//                return ["result"=>"User could not be created"];
+//            }
+//        }
+//    }
+//
+//    function updateUser(SignupUserRequest $request){
+////        return "update user";
+//
+//        $rules = [
+//            'name' => ['required', 'string', 'max:255'],
+//            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+//            'password' => ['required'],
+//        ];
+//        $validate=Validator::make($request->all(), $rules);
+//        if($validate->fails()){
+//            return $validate->errors();
+//        }
+//        else {
+//            $user = User::find($request->id);
+//            $user->name = $request->name;
+//            $user->email = $request->email;
+//            $user->email_verified_at = $request->email_verified_at;
+//            $user->password = $request->password;
+//            $user->created_at = $request->created_at;
+//            $user->updated_at = $request->updated_at;
+//
+//            if ($user->save()) {
+//                return ["result" => "User has been updated"];
+//            } else {
+//                return ["result" => "User could not be updated"];
+//            }
+//        }
+//    }
+//
+//    function deleteUser($id){
+//        $user=User::destroy($id);
+//        if($user){
+//            return ["result"=>"User has been deleted"];
+//        }
+//        else{
+//            return ["result"=>"User could not be deleted"];
+//        }
+//    }
 
     function loginUser(Request $request){
         $user=User::where('email',$request->email)->first();
@@ -134,22 +134,33 @@ class dummyAPI extends Controller
         $success['token']=$user->createToken('MyApp')->plainTextToken;
         $user['name']=$user->name;
 
-        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully'];
+        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user];
     }
 
     function signupUser(SignupUserRequest $request)
     {
-        $input = $request->validated();
-        $input['password'] = Hash::make($input['password']);
+        try {
+            $input = $request->validated();
+            $input['password'] = Hash::make($input['password']);
 
-        $user = User::create($input);
-        $success['token'] = $user->createToken('MyApp')->plainTextToken;
-        $user['name'] = $user->name;
+            $user = User::create($input);
+            $user->roles()->attach($request->role);
 
-        return ['success' => true, 'result' => $success, 'message' => 'user registered successfully'];
+            $success['token'] = $user->createToken('MyApp')->plainTextToken;
+
+            return [
+                'success' => true,
+                'result' => $success,
+                'message' => 'user registered successfully',
+                'user' => $user->load('roles')
+            ];
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
-
-
 
 //    public function signupUser(SignupUserRequest $request)
 //    {

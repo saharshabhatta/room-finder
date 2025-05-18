@@ -16,8 +16,10 @@ class SignupUserRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'numeric', 'unique:users'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required'],
+            'role' => ['required', 'exists:roles,id'],
         ];
     }
 }
