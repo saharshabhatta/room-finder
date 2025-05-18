@@ -27,7 +27,7 @@ class RoomRequest extends FormRequest
             'district' => 'required|string|max:255',
             'province' => 'required|string|max:255',
             'rent' => 'required|numeric|min:0',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'features' => 'nullable|array',
             'features.*' => 'nullable|string|max:100',
             'room_type' => 'nullable|array',

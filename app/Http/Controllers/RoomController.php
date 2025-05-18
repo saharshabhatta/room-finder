@@ -16,7 +16,7 @@ class RoomController extends Controller
 {
     public function index()
     {
-        $rooms = Room::with('images', 'features', 'roomType')->get();
+        $rooms = Room::with('images', 'features', 'roomType', 'user')->get();
 
         return ApiResponse::success([
             'data' => $rooms,
@@ -82,7 +82,7 @@ class RoomController extends Controller
 
     public function show(string $id)
     {
-        $room = Room::with('images', 'features', 'roomType')->find($id);
+        $room = Room::with('images', 'features', 'roomType', 'user')->find($id);
 
         if (!$room) {
             return ApiResponse::error([
@@ -102,6 +102,10 @@ class RoomController extends Controller
             DB::beginTransaction();
 
             $room = Room::find($id);
+
+            if($room->user_id != auth()->id()){
+                abort(403);
+            }
 
             if (!$room) {
                 return ApiResponse::error([
@@ -185,6 +189,10 @@ class RoomController extends Controller
     public function destroy(string $id)
     {
         $room = Room::find($id);
+
+        if ($room->user_id != auth()->id()) {
+            abort(403);
+        }
 
         if (!$room) {
             return ApiResponse::error([

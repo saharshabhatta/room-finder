@@ -19,24 +19,29 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
+
     public function edit(Request $request): JsonResponse
     {
         $user = Auth::user();
-        if($request->expectsJson()){
-            return response()->json(ApiResponse::success($user));
-    }
+
         if (!$user) {
             return ApiResponse::error([
                 'message' => 'User not authenticated.'
             ]);
         }
 
+        $user->load('images');
+
         return ApiResponse::success([
-            'data' => $user,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'image_url' => $user->image ? asset('storage/' . $user->image->image_path) : null,
+            ],
             'message' => 'User retrieved successfully.'
         ]);
     }
-
 
     /**
      * Update the user's profile information.
@@ -46,6 +51,7 @@ class ProfileController extends Controller
     {
         try {
             $user = $request->user();
+
             if (!$user) {
                 return response()->json([
                     'message' => 'User not found.',
@@ -57,35 +63,41 @@ class ProfileController extends Controller
             if ($user->isDirty('email')) {
                 $user->email_verified_at = null;
             }
+            if(!$request->hasFile('image') ||!$request->file('image')->isValid()) {
+                return response()->json([
+                    'message' => 'The image field is required.',
+                ]);
+            }
 
             if ($request->hasFile('image') && $request->file('image')->isValid()) {
-                $path = $request->file('image')->store('users', 'public');
+                $imageFile = $request->file('image');
+                $path = $imageFile->store('users', 'public');
 
                 $image = Image::where('user_id', $user->id)->first();
 
                 if ($image && $image->image_path && Storage::disk('public')->exists($image->image_path)) {
                     Storage::disk('public')->delete($image->image_path);
-                 }
+                }
+
+                $data = [
+                    'image_path' => $path,
+                    'name' => $imageFile->getClientOriginalName(),
+                ];
 
                 if ($image) {
-                    $image->update([
-                        'image_path' => $path,
-                        'name' => $request->file('image')->getClientOriginalName()
-                    ]);
+                    $image->update($data);
                 } else {
-                    Image::create([
-                        'user_id' => $user->id,
-                        'image_path' => $path,
-                        'name' => $request->file('image')->getClientOriginalName()
-                    ]);
+                    $user->images()->create($data);
                 }
             }
 
-            $user->save();
+            if ($user->isDirty()) {
+                $user->save();
+            }
 
-           return ApiResponse::success([
-               'message' => 'Profile updated successfully.',
-           ]);
+            return ApiResponse::success([
+                'message' => 'Profile updated successfully.',
+            ]);
 
         } catch (Exception $e) {
             return response()->json([
@@ -95,24 +107,31 @@ class ProfileController extends Controller
         }
     }
 
+
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): JsonResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        try {
+            $request->validateWithBag('userDeletion', [
+                'password' => ['required', 'current_password'],
+            ]);
 
-        $user = $request->user();
+            $user = $request->user();
 
-        Auth::logout();
+            if (!$user) {
+                return ApiResponse::error(['message' => 'Unauthenticated.'], 401);
+            }
 
-        $user->delete();
+            $user->delete();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+            return ApiResponse::success([
+                'message' => 'User deleted successfully.',
+            ]);
 
-        return Redirect::to('/');
+        } catch (Exception ) {
+            return ApiResponse::error(['message' => 'Something went wrong.'], 500);
+        }
     }
 }
