@@ -9,7 +9,6 @@ use App\Models\Image;
 use App\Models\Room;
 use App\Models\RoomType;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -112,7 +111,6 @@ class RoomController extends Controller
     public function update(RoomRequest $request, string $id)
     {
         try {
-            if (auth::check()) {
                 DB::beginTransaction();
 
                 $room = Room::find($id);
@@ -193,11 +191,7 @@ class RoomController extends Controller
                     'data' => $room->load(['images', 'features', 'roomType']),
                     'message' => 'Room updated successfully.'
                 ]);
-            }else {
-                return ApiResponse::error([
-                    'message' => 'Unauthorized'
-                ]);
-            }
+
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -209,7 +203,6 @@ class RoomController extends Controller
 
     public function destroy(string $id)
     {
-        if(auth::check()){
             $room = Room::find($id);
 
             if ($room->user_id != auth()->id()) {
@@ -229,10 +222,5 @@ class RoomController extends Controller
                 'data' => $room,
                 'message' => 'Room deleted successfully.'
             ]);
-        }else{
-            return ApiResponse::error([
-                'message' => 'Unauthorized'
-            ]);
-        }
     }
 }

@@ -134,7 +134,7 @@ class dummyAPI extends Controller
         $success['token']=$user->createToken('MyApp')->plainTextToken;
         $user['name']=$user->name;
 
-        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user];
+        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user->load('roles')];
     }
 
     function signupUser(SignupUserRequest $request)
