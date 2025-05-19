@@ -11,6 +11,8 @@ use App\Models\RoomType;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Favorite;
+use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
@@ -26,6 +28,11 @@ class RoomController extends Controller
 
     public function store(RoomRequest $request)
     {
+        if (auth()->user()->role !== 'owner') {
+            return ApiResponse::error([
+                'message' => 'Unauthorized. Only owners can create rooms.',
+            ], 403);
+        }
         try {
                 DB::beginTransaction();
 

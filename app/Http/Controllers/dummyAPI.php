@@ -134,7 +134,7 @@ class dummyAPI extends Controller
         $success['token']=$user->createToken('MyApp')->plainTextToken;
         $user['name']=$user->name;
 
-        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user->load('roles')];
+        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user->load('role')];
     }
 
     function signupUser(SignupUserRequest $request)
@@ -144,7 +144,7 @@ class dummyAPI extends Controller
             $input['password'] = Hash::make($input['password']);
 
             $user = User::create($input);
-            $user->roles()->attach($request->role);
+            $user->role()->attach($request->role);
 
             $success['token'] = $user->createToken('MyApp')->plainTextToken;
 
@@ -152,7 +152,7 @@ class dummyAPI extends Controller
                 'success' => true,
                 'result' => $success,
                 'message' => 'user registered successfully',
-                'user' => $user->load('roles')
+                'user' => $user->load('role')
             ];
         } catch (Exception $e) {
             return response()->json([
