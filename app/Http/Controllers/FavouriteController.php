@@ -4,40 +4,60 @@ namespace App\Http\Controllers;
 
 use App\Facades\ApiResponse;
 use App\Models\Favourite;
+use App\Models\Room;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FavouriteController extends Controller
 {
-    public function toggleFavorite(Request $request)
+    public function toggleFavourite(Request $request)
     {
         $user = auth()->user();
 
-        $roomId = $request->input('room_id');
-        if (!$roomId) {
-            return ApiResponse::error('Room ID is required.', 400);
-        }
+        try {
+            DB::beginTransaction();
 
-        $favorite = Favourite::where('user_id', $user->id)
-            ->where('room_id', $roomId)
-            ->first();
+            $roomId = $request->input('room_id');
+            if (!$roomId) {
+                return ApiResponse::error('Room ID is required.');
+            }
 
-        if ($favorite) {
-            $favorite->delete();
+            $room = Room::find($roomId);
+            if (!$room) {
+                return ApiResponse::error('Room not found.');
+            }
 
-            return ApiResponse::success([
-                'message' => 'Removed from favorites.'
-            ]);
-        } else {
-            Favourite::create([
-                'user_id' => $user->id,
-                'room_id' => $roomId
-            ]);
+            $favourite = Favourite::where('user_id', $user->id)
+                ->where('room_id', $roomId)
+                ->first();
 
-            return ApiResponse::success([
-                'message' => 'Added to favorites.'
+            if ($favourite) {
+                $favourite->delete();
+
+                DB::commit();
+                return ApiResponse::success([
+                    'message' => 'Removed from favourites.'
+                ]);
+            } else {
+                Favourite::create([
+                    'user_id' => $user->id,
+                    'room_id' => $roomId
+                ]);
+
+                DB::commit();
+                return ApiResponse::success([
+                    'message' => 'Added to favourites.'
+                ]);
+            }
+        } catch (Exception $exception) {
+            DB::rollBack();
+            return ApiResponse::error([
+                'message' => $exception->getMessage()
             ]);
         }
     }
+
     public function index()
     {
         $user = auth()->user();
