@@ -48,8 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('/favorite/toggle', [FavouriteController::class, 'toggleFavorite']);
-    Route::get('/favorite', [FavouriteController::class, 'index'])->name('favorite.index');
+    Route::post('/favourites/toggle', [FavouriteController::class, 'toggleFavourite']);
+    Route::get('/favourites', [FavouriteController::class, 'index'])->name('favourite.index');
 });
 
 Route::post('/logout', [UserAuthController::class, 'logout'])->middleware('auth:sanctum');

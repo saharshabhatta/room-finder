@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Mockery\Exception;
@@ -127,19 +128,27 @@ class dummyAPI extends Controller
 //    }
 
     function loginUser(Request $request){
-        $user=User::where('email',$request->email)->first();
-        if(!$user || !Hash::check($request->password,$user->password)){
-            return ["result"=>"Email or password is not correct", 'Success'=>false];
-        }
-        $success['token']=$user->createToken('MyApp')->plainTextToken;
-        $user['name']=$user->name;
+        try{
+            DB::beginTransaction();
+            $user=User::where('email',$request->email)->first();
+            if(!$user || !Hash::check($request->password,$user->password)){
+                return ["result"=>"Email or password is not correct", 'Success'=>false];
+            }
+            $success['token']=$user->createToken('MyApp')->plainTextToken;
+            $user['name']=$user->name;
 
-        return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user->load('roles')];
+            DB::commit();
+            return ['success'=>true,'result'=>$success,'message'=>'user logged in successfully', 'user'=>$user->load('roles')];
+        }catch (Exception $e){
+            DB::rollBack();
+            return ["result"=>"Something went wrong", 'Success'=>false];
+        }
     }
 
     function signupUser(SignupUserRequest $request)
     {
         try {
+            DB::beginTransaction();
             $input = $request->validated();
             $input['password'] = Hash::make($input['password']);
 
@@ -148,6 +157,8 @@ class dummyAPI extends Controller
 
             $success['token'] = $user->createToken('MyApp')->plainTextToken;
 
+            DB::commit();
+
             return [
                 'success' => true,
                 'result' => $success,
@@ -155,6 +166,7 @@ class dummyAPI extends Controller
                 'user' => $user->load('roles')
             ];
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),

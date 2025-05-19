@@ -33,62 +33,59 @@ class RoomController extends Controller
 //                'message' => 'Unauthorized. Only owners can create rooms.',
 //            ], 403);
 //        }
+
         try {
-                DB::beginTransaction();
+            DB::beginTransaction();
 
-                $room = Room::create(array_merge(
-                    $request->validated(),
-                    ['user_id' => auth()->id()]
-                ));
+            $room = Room::create(array_merge(
+                $request->validated(),
+                ['user_id' => auth()->id()]
+            ));
 
-                if ($request->has('features')) {
-                    $featureIds = [];
+            if ($request->has('features')) {
+                $featureIds = [];
 
-                    if ($request->has('features')) {
-                        $featureIds = [];
-
-                        foreach ($request->input('features') as $item) {
-                            $feature = Feature::find((int) $item);
-
-                            if (!$feature) {
-                                $feature = Feature::firstOrCreate(['name' => $item]);
-                            }
-
-                            $featureIds[] = $feature->id;
-                        }
-
-                        $room->features()->attach($featureIds);
+                foreach ($request->features as $feature) {
+                    if (is_numeric($feature)) {
+                        $feature = Feature::find((int)$feature);
+                    } else {
+                        $feature = Feature::firstOrCreate(['name' => $feature]);
                     }
 
-                    $room->features()->attach($featureIds);
+                    if ($feature) {
+                        $featureIds[] = $feature->id;
+                    }
                 }
 
-                if ($request->hasFile('image')) {
-                    $path = $request->file('image')->store('rooms', 'public');
+                $room->features()->attach($featureIds);
+            }
 
-                    Image::create([
-                        'room_id' => $room->id,
-                        'image_path' => $path,
-                        'name' => $request->file('image')->getClientOriginalName(),
-                    ]);
-                }
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('rooms', 'public');
 
-                if ($request->has('room_type')) {
-                    $roomType = $request->input('room_type');
-
-                    RoomType::create([
-                        'room_id' => $room->id,
-                        'name' => $roomType['name'],
-                        'description' => $roomType['description'],
-                    ]);
-                }
-
-                DB::commit();
-
-                return ApiResponse::success([
-                    'data' => $room->load(['images', 'features', 'roomType']),
-                    'message' => 'Room created successfully.',
+                Image::create([
+                    'room_id' => $room->id,
+                    'image_path' => $path,
+                    'name' => $request->file('image')->getClientOriginalName(),
                 ]);
+            }
+
+            if ($request->has('room_type')) {
+                $roomType = $request->input('room_type');
+
+                RoomType::create([
+                    'room_id' => $room->id,
+                    'name' => $roomType['name'],
+                    'description' => $roomType['description'],
+                ]);
+            }
+
+            DB::commit();
+
+            return ApiResponse::success([
+                'data' => $room->load(['images', 'features', 'roomType']),
+                'message' => 'Room created successfully.',
+            ]);
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -97,6 +94,7 @@ class RoomController extends Controller
             ]);
         }
     }
+
 
 
     public function show(string $id)
