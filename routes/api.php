@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ProfileController;
@@ -48,7 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('/favorite/toggle', [FavoriteController::class, 'toggleFavorite']);
+    Route::post('/favorite/toggle', [FavouriteController::class, 'toggleFavorite']);
+    Route::get('/favorite', [FavouriteController::class, 'index'])->name('favorite.index');
 });
 
 Route::post('/logout', [UserAuthController::class, 'logout'])->middleware('auth:sanctum');

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Facades\ApiResponse;
-use App\Models\Favorite;
+use App\Models\Favourite;
 use Illuminate\Http\Request;
 
-class FavoriteController extends Controller
+class FavouriteController extends Controller
 {
     public function toggleFavorite(Request $request)
     {
@@ -17,7 +17,7 @@ class FavoriteController extends Controller
             return ApiResponse::error('Room ID is required.', 400);
         }
 
-        $favorite = Favorite::where('user_id', $user->id)
+        $favorite = Favourite::where('user_id', $user->id)
             ->where('room_id', $roomId)
             ->first();
 
@@ -28,7 +28,7 @@ class FavoriteController extends Controller
                 'message' => 'Removed from favorites.'
             ]);
         } else {
-            Favorite::create([
+            Favourite::create([
                 'user_id' => $user->id,
                 'room_id' => $roomId
             ]);
@@ -37,5 +37,17 @@ class FavoriteController extends Controller
                 'message' => 'Added to favorites.'
             ]);
         }
+    }
+    public function index()
+    {
+        $user = auth()->user();
+
+        $favourites = Favourite::with('room')
+        ->where('user_id', $user->id)
+            ->get();
+
+        return ApiResponse::success([
+            'favourites' => $favourites
+        ]);
     }
 }

@@ -32,6 +32,7 @@ class Room extends Model{
     {
         return $this->belongsToMany(Feature::class, 'feature_rooms');
     }
+
 }
 
 
