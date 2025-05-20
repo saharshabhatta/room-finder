@@ -3,6 +3,7 @@
 use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\InterestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomTypeController;
@@ -50,6 +51,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/favourites/toggle', [FavouriteController::class, 'toggleFavourite']);
     Route::get('/favourites', [FavouriteController::class, 'index'])->name('favourite.index');
+    Route::post('/interests/toggle', [InterestController::class, 'toggleInterest']);
+    Route::get('/interests', [InterestController::class, 'getInterests']);
+    Route::get('/interests/{id}', [InterestController::class, 'getInterestById']);
 });
 
 Route::post('/logout', [UserAuthController::class, 'logout'])->middleware('auth:sanctum');
