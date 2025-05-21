@@ -43,6 +43,8 @@ Route::get('rooms', [RoomController::class, 'index']);
 Route::middleware('auth:sanctum')->apiResource('rooms', RoomController::class)->except(['index']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('rooms/search', [RoomController::class, 'search']);
+    Route::get('rooms/filter', [RoomController::class, 'filter']);
     Route::apiResource('features', FeatureController::class);
     Route::apiResource('room_types', RoomTypeController::class);
     Route::apiResource('images', ImageController::class);

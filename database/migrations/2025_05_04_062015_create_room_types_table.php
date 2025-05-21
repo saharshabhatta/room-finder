@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('room_id')->constrained()->onDelete('cascade');
+            $table->foreignId('room_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('name');
             $table->text('description');
             $table->timestamps();
@@ -25,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('room_types', function (Blueprint $table) {
+            $table->dropForeign(['room_id']);
+        });
+
         Schema::dropIfExists('room_types');
     }
 };

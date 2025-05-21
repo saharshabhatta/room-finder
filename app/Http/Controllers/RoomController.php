@@ -28,11 +28,11 @@ class RoomController extends Controller
 
     public function store(RoomRequest $request)
     {
-//        if (auth()->user()->role !== 'owner') {
-//            return ApiResponse::error([
-//                'message' => 'Unauthorized. Only owners can create rooms.',
-//            ], 403);
-//        }
+        // if (auth()->user()->role !== 'owner') {
+        //     return ApiResponse::error([
+        //         'message' => 'Unauthorized. Only owners can create rooms.',
+        //     ], 403);
+        // }
 
         try {
             DB::beginTransaction();
@@ -47,7 +47,7 @@ class RoomController extends Controller
 
                 foreach ($request->features as $feature) {
                     if (is_numeric($feature)) {
-                        $feature = Feature::find((int)$feature);
+                        $feature = Feature::find((int) $feature);
                     } else {
                         $feature = Feature::firstOrCreate(['name' => $feature]);
                     }
@@ -71,13 +71,15 @@ class RoomController extends Controller
             }
 
             if ($request->has('room_type')) {
-                $roomType = $request->input('room_type');
+                $roomTypeData = $request->room_type;
 
-                RoomType::create([
-                    'room_id' => $room->id,
-                    'name' => $roomType['name'],
-                    'description' => $roomType['description'],
-                ]);
+                if (is_array($roomTypeData)) {
+                    RoomType::create([
+                        'room_id' => $room->id,
+                        'name' => $roomTypeData['name'] ?? 'Unnamed',
+                        'description' => $roomTypeData['description'] ?? '',
+                    ]);
+                }
             }
 
             DB::commit();
@@ -94,7 +96,6 @@ class RoomController extends Controller
             ]);
         }
     }
-
 
 
     public function show(string $id)
@@ -227,5 +228,37 @@ class RoomController extends Controller
                 'data' => $room,
                 'message' => 'Room deleted successfully.'
             ]);
+    }
+
+    public function search()
+    {
+        $query = request('q');
+
+        $rooms = Room::with(['roomType', 'features'])
+            ->where(function ($q) use ($query) {
+                $q->where('description', 'like', '%' . $query . '%')
+                    ->orWhere('location', 'like', '%' . $query . '%')
+                    ->orWhere('district', 'like', '%' . $query . '%')
+                    ->orWhere('province', 'like', '%' . $query . '%')
+                    ->orWhereHas('roomType', function($q) use ($query) {
+                        $q->where('name', 'like', '%' . $query . '%')
+                            ->orWhere('description', 'like', '%' . $query . '%');
+                    })
+                    ->orWhereHas('features', function($q) use ($query) {
+                        $q->where('name', 'like', '%' . $query . '%');
+                    });
+            })
+            ->get();
+
+        if ($rooms->isNotEmpty()) {
+            return ApiResponse::success([
+                'data' => $rooms,
+                'message' => 'Rooms retrieved successfully.'
+            ]);
+        } else {
+            return ApiResponse::error([
+                'message' => 'No matching rooms found.'
+            ]);
+        }
     }
 }
