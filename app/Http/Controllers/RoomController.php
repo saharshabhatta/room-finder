@@ -28,12 +28,6 @@ class RoomController extends Controller
 
     public function store(RoomRequest $request)
     {
-        // if (auth()->user()->role !== 'owner') {
-        //     return ApiResponse::error([
-        //         'message' => 'Unauthorized. Only owners can create rooms.',
-        //     ], 403);
-        // }
-
         try {
             DB::beginTransaction();
 
@@ -47,13 +41,13 @@ class RoomController extends Controller
 
                 foreach ($request->features as $feature) {
                     if (is_numeric($feature)) {
-                        $feature = Feature::find((int) $feature);
+                        $featureModel = Feature::find((int) $feature);
                     } else {
-                        $feature = Feature::firstOrCreate(['name' => $feature]);
+                        $featureModel = Feature::firstOrCreate(['name' => $feature]);
                     }
 
-                    if ($feature) {
-                        $featureIds[] = $feature->id;
+                    if ($featureModel) {
+                        $featureIds[] = $featureModel->id;
                     }
                 }
 
@@ -70,16 +64,23 @@ class RoomController extends Controller
                 ]);
             }
 
-            if ($request->has('room_type')) {
-                $roomTypeData = $request->room_type;
-
-                if (is_array($roomTypeData)) {
+            if ($request->has('room_type_id')) {
+                $roomType = RoomType::find($request->room_type_id);
+                if ($roomType) {
                     RoomType::create([
                         'room_id' => $room->id,
-                        'name' => $roomTypeData['name'] ?? 'Unnamed',
-                        'description' => $roomTypeData['description'] ?? '',
+                        'name' => $roomType->name,
+                        'description' => $roomType->description,
                     ]);
                 }
+            } elseif ($request->has('room_type')) {
+                $roomTypeData = $request->room_type;
+
+                RoomType::create([
+                    'room_id' => $room->id,
+                    'name' => $roomTypeData['name'] ?? 'Unnamed',
+                    'description' => $roomTypeData['description'] ?? '',
+                ]);
             }
 
             DB::commit();
@@ -117,86 +118,108 @@ class RoomController extends Controller
     public function update(RoomRequest $request, string $id)
     {
         try {
-                DB::beginTransaction();
+            DB::beginTransaction();
 
-                $room = Room::find($id);
+            $room = Room::find($id);
 
-                if($room->user_id != auth()->id()){
-                    return ApiResponse::error([
-                        'message' => 'Unauthorized.'
-                    ]);
-                }
+            if (!$room) {
+                return ApiResponse::error([
+                    'message' => 'Room not found.'
+                ]);
+            }
 
-                if (!$room) {
-                    return ApiResponse::error([
-                        'message' => 'Room not found.'
-                    ]);
-                }
+            if ($room->user_id !== auth()->id()) {
+                return ApiResponse::error([
+                    'message' => 'Unauthorized.'
+                ], 403);
+            }
 
-                $room->update($request->validated());
+            $room->update($request->validated());
 
-                if ($request->hasFile('image') && $request->file('image')->isValid()) {
-                    $path = $request->file('image')->store('rooms', 'public');
+            if ($request->has('features')) {
+                $featureIds = [];
 
-                    $image = Image::where('room_id', $room->id)->first();
-
-                    if ($image && $image->image_path) {
-                        if (Storage::disk('public')->exists($image->image_path)) {
-                            Storage::disk('public')->delete($image->image_path);
-                        }
+                foreach ($request->features as $feature) {
+                    if (is_numeric($feature)) {
+                        $featureModel = Feature::find((int) $feature);
+                    } else {
+                        $featureModel = Feature::firstOrCreate(['name' => $feature]);
                     }
 
-                    if ($image) {
-                        $image->update([
-                            'image_path' => $path,
-                            'name' => $request->file('image')->getClientOriginalName()
+                    if ($featureModel) {
+                        $featureIds[] = $featureModel->id;
+                    }
+                }
+
+                $room->features()->sync($featureIds);
+            }
+
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $path = $request->file('image')->store('rooms', 'public');
+
+                $image = Image::where('room_id', $room->id)->first();
+
+                if ($image && Storage::disk('public')->exists($image->image_path)) {
+                    Storage::disk('public')->delete($image->image_path);
+                }
+
+                if ($image) {
+                    $image->update([
+                        'image_path' => $path,
+                        'name' => $request->file('image')->getClientOriginalName()
+                    ]);
+                } else {
+                    Image::create([
+                        'room_id' => $room->id,
+                        'image_path' => $path,
+                        'name' => $request->file('image')->getClientOriginalName()
+                    ]);
+                }
+            }
+
+            if ($request->has('room_type_id')) {
+                $roomType = RoomType::find($request->room_type_id);
+                if ($roomType) {
+                    $existing = RoomType::where('room_id', $room->id)->first();
+
+                    if ($existing) {
+                        $existing->update([
+                            'name' => $roomType->name,
+                            'description' => $roomType->description,
                         ]);
                     } else {
-                        Image::create([
+                        RoomType::create([
                             'room_id' => $room->id,
-                            'image_path' => $path,
-                            'name' => $request->file('image')->getClientOriginalName()
+                            'name' => $roomType->name,
+                            'description' => $roomType->description,
                         ]);
                     }
                 }
+            } elseif ($request->has('room_type')) {
+                $roomTypeData = $request->room_type;
 
-                if ($request->has('room_type')) {
-                    $details = $request->input('room_type');
+                $existing = RoomType::where('room_id', $room->id)->first();
 
-                    if ($details) {
-                        $roomType = RoomType::where('room_id', $room->id)->first();
-
-                        if ($roomType) {
-                            $roomType->update([
-                                'name' => $details['name'],
-                                'description' => $details['description'],
-                            ]);
-                        } else {
-                            RoomType::create([
-                                'room_id' => $room->id,
-                                'name' => $details['name'],
-                                'description' => $details['description'],
-                            ]);
-                        }
-                    }
+                if ($existing) {
+                    $existing->update([
+                        'name' => $roomTypeData['name'] ?? 'Unnamed',
+                        'description' => $roomTypeData['description'] ?? '',
+                    ]);
+                } else {
+                    RoomType::create([
+                        'room_id' => $room->id,
+                        'name' => $roomTypeData['name'] ?? 'Unnamed',
+                        'description' => $roomTypeData['description'] ?? '',
+                    ]);
                 }
+            }
 
-                if ($request->has('features')) {
-                    $featureIds = [];
-                    foreach ($request->input('features') as $featureName) {
-                        $feature = Feature::firstOrCreate(['name' => $featureName]);
-                        $featureIds[] = $feature->id;
-                    }
+            DB::commit();
 
-                    $room->features()->sync($featureIds);
-                }
-
-                DB::commit();
-
-                return ApiResponse::success([
-                    'data' => $room->load(['images', 'features', 'roomType']),
-                    'message' => 'Room updated successfully.'
-                ]);
+            return ApiResponse::success([
+                'data' => $room->load(['images', 'features', 'roomType']),
+                'message' => 'Room updated successfully.'
+            ]);
 
         } catch (Exception $e) {
             DB::rollBack();
@@ -206,6 +229,7 @@ class RoomController extends Controller
             ]);
         }
     }
+
 
     public function destroy(string $id)
     {
@@ -260,5 +284,35 @@ class RoomController extends Controller
                 'message' => 'No matching rooms found.'
             ]);
         }
+    }
+
+    public function filter(Request $request)
+    {
+        $minRent = $request->input('min_rent');
+        $maxRent = $request->input('max_rent');
+
+        $query = Room::query();
+
+        if ($minRent !== null) {
+            $query->where('rent', '>=', $minRent);
+        }
+
+        if ($maxRent !== null) {
+            $query->where('rent', '<=', $maxRent);
+        }
+
+        $rooms = $query->get();
+
+        if ($rooms->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching room found.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $rooms
+        ]);
     }
 }

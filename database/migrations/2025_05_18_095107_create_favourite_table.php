@@ -24,6 +24,11 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('favourites', function (Blueprint $table) {
+            $table->dropForeign(['room_id']);
+            $table->dropForeign(['user_id']);
+        });
+
         Schema::dropIfExists('favourite');
     }
 };
