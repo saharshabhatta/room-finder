@@ -16,11 +16,14 @@ class FeatureController extends Controller
      */
     public function index()
     {
+        $features = Feature::where('user_id', 1)->get();
+
         return ApiResponse::success([
-            'data' => Feature::all(),
-            'message' => 'Feature List retrieved successfully'
+            'data' => $features,
+            'message' => 'Feature list retrieved successfully for user ID 1'
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.

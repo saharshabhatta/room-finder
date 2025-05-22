@@ -13,16 +13,26 @@ class FeatureSeeder extends Seeder
     public function run(): void
     {
         DB::table('features')->insert([
-            ['name' => 'Furnished'],
-            ['name' => 'Attached Bathroom'],
-            ['name' => 'Wi-Fi Included'],
-            ['name' => 'Air Conditioner'],
-            ['name' => 'Power Backup'],
-            ['name' => 'Kitchen Access'],
-            ['name' => 'Laundry Facility'],
-            ['name' => 'Parking Available'],
-            ['name' => 'CCTV Surveillance'],
-            ['name' => 'Cleaning Service'],
+            ['name' => 'Furnished',
+                'user_id'=>'1'],
+            ['name' => 'Attached Bathroom',
+                'user_id'=>'1'],
+            ['name' => 'Wi-Fi Included',
+                'user_id'=>'1'],
+            ['name' => 'Air Conditioner',
+                'user_id'=>'1'],
+            ['name' => 'Power Backup',
+                'user_id'=>'1'],
+            ['name' => 'Kitchen Access',
+                'user_id'=>'1'],
+            ['name' => 'Laundry Facility',
+                'user_id'=>'1'],
+            ['name' => 'Parking Available',
+                'user_id'=>'1'],
+            ['name' => 'CCTV Surveillance',
+                'user_id'=>'1'],
+            ['name' => 'Cleaning Service',
+                'user_id'=>'1'],
         ]);
     }
 }
