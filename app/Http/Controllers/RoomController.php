@@ -315,4 +315,21 @@ class RoomController extends Controller
             'data' => $rooms
         ]);
     }
+
+    public function getUserRooms($userId)
+    {
+        $rooms = Room::with(['images', 'features', 'roomType'])
+            ->where('user_id', $userId)
+            ->get();
+        if ($rooms->isNotEmpty()) {
+            return ApiResponse::success([
+                'data' => $rooms,
+                'message' => 'Rooms retrieved successfully.'
+            ]);
+        }else{
+            return ApiResponse::error([
+                'message' => 'No rooms found.'
+            ]);
+        }
+    }
 }
