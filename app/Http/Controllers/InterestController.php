@@ -65,13 +65,40 @@ class InterestController extends Controller
 
     public function getInterestById($id)
     {
-        $interest=Interest::with('room', 'user')->find($id);
+        $user = auth()->user();
+
+        $interest = Interest::with('room', 'user')->find($id);
 
         if (!$interest) {
             return ApiResponse::error('Interest not found.');
         }
 
-        return ApiResponse::success($interest);
+        if ($interest->room->user_id !== $user->id) {
+            return ApiResponse::error('Unauthorized access.', 403);
+        }
 
+        return ApiResponse::success($interest);
+    }
+
+
+    public function getInterestsByRooms()
+    {
+        $user = auth()->user();
+
+        $interests = Interest::where('user_id', $user->id)
+            ->orWhereHas('room', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['room', 'user'])
+            ->get();
+
+        if ($interests->isEmpty()) {
+            return ApiResponse::error('Interest not found.', 400);
+        }
+
+        return ApiResponse::success([
+            'data' => $interests,
+            'message' => 'Interests retrieved successfully.'
+        ]);
     }
 }

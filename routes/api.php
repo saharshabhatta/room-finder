@@ -16,18 +16,18 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get("data",[dummyAPI::class,'getData']);
+//Route::get("data",[dummyAPI::class,'getData']);
+//
+//Route::get("list/{id?}", [dummyAPI::class, 'list']);
+//
+//Route::group(['middleware' => 'auth:sanctum'], function () {
+//    Route::get("user", [dummyAPI::class, 'getUser']);
+//    Route::post("add-user", [dummyAPI::class, 'createUser']);
+//    Route::put("update-user", [dummyAPI::class, 'updateUser']);
+//    Route::delete("delete-user/{id}", [dummyAPI::class, 'deleteUser']);
+//});
 
-Route::get("list/{id?}", [dummyAPI::class, 'list']);
-
-Route::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get("user", [dummyAPI::class, 'getUser']);
-    Route::post("add-user", [dummyAPI::class, 'createUser']);
-    Route::put("update-user", [dummyAPI::class, 'updateUser']);
-    Route::delete("delete-user/{id}", [dummyAPI::class, 'deleteUser']);
-});
-
-Route::get("search-user/{name}",[dummyAPI::class, 'searchUser']);
+//Route::get("search-user/{name}",[dummyAPI::class, 'searchUser']);
 
 Route::middleware('web')->group(function () {
     Route::post('/login', [dummyAPI::class, 'loginUser']);
@@ -56,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/favourites', [FavouriteController::class, 'index'])->name('favourite.index');
     Route::post('/interests/toggle', [InterestController::class, 'toggleInterest']);
     Route::get('/interests', [InterestController::class, 'getInterests']);
+    Route::get('interests/my-rooms', [InterestController::class,'getInterestsByRooms']);
     Route::get('/interests/{id}', [InterestController::class, 'getInterestById']);
 });
 
@@ -71,4 +72,3 @@ Route::post('/logout', [UserAuthController::class, 'logout'])->middleware('auth:
 //    Route::delete('/profile', [ProfileController::class, 'destroy'])
 //        ->name('profile.destroy');
 //});
-

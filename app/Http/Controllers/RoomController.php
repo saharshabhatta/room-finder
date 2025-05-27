@@ -11,14 +11,18 @@ use App\Models\RoomType;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Favourite;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
     public function index()
     {
-        $rooms = Room::with('images', 'features', 'roomType', 'user')->get();
+        $rooms = Room::with([
+            'images',
+            'features',
+            'roomType',
+            'user:id,phone'
+        ])->get();
 
         return ApiResponse::success([
             'data' => $rooms,
