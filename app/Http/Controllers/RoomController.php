@@ -21,7 +21,7 @@ class RoomController extends Controller
             'images',
             'features',
             'roomType',
-            'user:id,phone'
+            'user'
         ])->get();
 
         return ApiResponse::success([
