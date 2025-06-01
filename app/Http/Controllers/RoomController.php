@@ -58,32 +58,45 @@ class RoomController extends Controller
                 $room->features()->attach($featureIds);
             }
 
-            if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('rooms', 'public');
+            if ($request->hasFile('images')) {
+                $images = $request->file('images');
 
-                Image::create([
-                    'room_id' => $room->id,
-                    'image_path' => $path,
-                    'name' => $request->file('image')->getClientOriginalName(),
-                ]);
+                if (is_array($images)) {
+                    $imageData = [];
+
+                    foreach ($images as $image) {
+                        $filename = uniqid() . '_' . $image->getClientOriginalName();
+                        $storedPath = $image->storeAs('images', $filename, 'public');
+
+                        $imageData[] = [
+                            'room_id'    => $room->id,
+                            'user_id'    => auth()->id(),
+                            'image_path' => $storedPath,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    Image::insert($imageData);
+                }
             }
 
             if ($request->has('room_type_id')) {
                 $roomType = RoomType::find($request->room_type_id);
                 if ($roomType) {
                     RoomType::create([
-                        'room_id' => $room->id,
-                        'name' => $roomType->name,
-                        'description' => $roomType->description,
+                        'room_id'    => $room->id,
+                        'name'       => $roomType->name,
+                        'description'=> $roomType->description,
                     ]);
                 }
             } elseif ($request->has('room_type')) {
                 $roomTypeData = $request->room_type;
 
                 RoomType::create([
-                    'room_id' => $room->id,
-                    'name' => $roomTypeData['name'] ?? 'Unnamed',
-                    'description' => $roomTypeData['description'] ?? '',
+                    'room_id'    => $room->id,
+                    'name'       => $roomTypeData['name'] ?? 'Unnamed',
+                    'description'=> $roomTypeData['description'] ?? '',
                 ]);
             }
 
@@ -93,15 +106,15 @@ class RoomController extends Controller
                 'data' => $room->load(['images', 'features', 'roomType']),
                 'message' => 'Room created successfully.',
             ]);
+
         } catch (Exception $e) {
             DB::rollBack();
 
             return ApiResponse::error([
-                'message' => $e->getMessage(),
+                'message' => 'Failed to create room: ' . $e->getMessage(),
             ]);
         }
     }
-
 
     public function show(string $id)
     {
