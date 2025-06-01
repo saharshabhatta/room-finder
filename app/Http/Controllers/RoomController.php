@@ -95,8 +95,8 @@ class RoomController extends Controller
 
                 RoomType::create([
                     'room_id'    => $room->id,
-                    'name'       => $roomTypeData['name'] ?? 'Unnamed',
-                    'description'=> $roomTypeData['description'] ?? '',
+                    'name'       => $roomTypeData['name'],
+                    'description'=> $roomTypeData['description'],
                 ]);
             }
 
@@ -171,26 +171,26 @@ class RoomController extends Controller
                 $room->features()->sync($featureIds);
             }
 
-            if ($request->hasFile('image') && $request->file('image')->isValid()) {
-                $path = $request->file('image')->store('rooms', 'public');
+            if ($request->hasFile('images') && $request->file('images')->isValid()) {
+                $images = $request->file('images');
 
-                $image = Image::where('room_id', $room->id)->first();
+                if (is_array($images)) {
+                    $imageData = [];
 
-                if ($image && Storage::disk('public')->exists($image->image_path)) {
-                    Storage::disk('public')->delete($image->image_path);
-                }
+                    foreach ($images as $image) {
+                        $filename = uniqid() . '_' . $image->getClientOriginalName();
+                        $storedPath = $image->storeAs('images', $filename, 'public');
 
-                if ($image) {
-                    $image->update([
-                        'image_path' => $path,
-                        'name' => $request->file('image')->getClientOriginalName()
-                    ]);
-                } else {
-                    Image::create([
-                        'room_id' => $room->id,
-                        'image_path' => $path,
-                        'name' => $request->file('image')->getClientOriginalName()
-                    ]);
+                        $imageData[] = [
+                            'room_id'    => $room->id,
+                            'user_id'    => auth()->id(),
+                            'image_path' => $storedPath,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+
+                    Image::insert($imageData);
                 }
             }
 
@@ -219,14 +219,14 @@ class RoomController extends Controller
 
                 if ($existing) {
                     $existing->update([
-                        'name' => $roomTypeData['name'] ?? 'Unnamed',
-                        'description' => $roomTypeData['description'] ?? '',
+                        'name' => $roomTypeData['name'] ,
+                        'description' => $roomTypeData['description'],
                     ]);
                 } else {
                     RoomType::create([
                         'room_id' => $room->id,
-                        'name' => $roomTypeData['name'] ?? 'Unnamed',
-                        'description' => $roomTypeData['description'] ?? '',
+                        'name' => $roomTypeData['name'] ,
+                        'description' => $roomTypeData['description'] ,
                     ]);
                 }
             }
@@ -246,7 +246,6 @@ class RoomController extends Controller
             ]);
         }
     }
-
 
     public function destroy(string $id)
     {
