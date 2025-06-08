@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Facades\ApiResponse;
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\RoomRequest;
 use App\Models\Feature;
 use App\Models\Image;
@@ -302,7 +303,7 @@ class RoomController extends Controller
         }
     }
 
-    public function filter(Request $request)
+    public function filter(FilterRequest $request)
     {
         $minRent = $request->input('min_rent');
         $maxRent = $request->input('max_rent');
